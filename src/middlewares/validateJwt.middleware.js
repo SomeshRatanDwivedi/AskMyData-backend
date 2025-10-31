@@ -10,7 +10,6 @@ const validateJwt = (req, res, next) => {
     if (err) {
       return res.status(403).json({ success: false, message: "Invalid token" });
     }
-    console.log(user, "user from token");
     req.user = user;
     next();
   });

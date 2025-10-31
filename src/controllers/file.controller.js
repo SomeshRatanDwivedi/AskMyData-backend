@@ -1,6 +1,9 @@
 import fileModel from "../models/file.model.js";
+import { uploadFileInVectorDb } from "../services/vector-upload.service.js";
+import path from "path"
 
-const uploadFile = async(req, res) => {
+
+const uploadFile = async (req, res) => {
   try {
     if (!req.file)
       return res.status(400).json({ message: "No file uploaded" });
@@ -12,12 +15,16 @@ const uploadFile = async(req, res) => {
       status: "PENDING",
       userId: req.user.userId
     }
-    const saved = await fileModel.saveFile(fileInfo, {id:true, originalName:true})
-
+    const saved = await fileModel.saveFile(fileInfo, { id: true, originalName: true });
+    if (saved) {
+      const filePath = path.join("src/uploads/userFiles", req.file.filename);
+      const res = await uploadFileInVectorDb(filePath, req.file.filename, req.user.userId);
+      await fileModel.updateFile({ id: saved.id }, res);
+    }
     return res.json({ success: true, data: saved });
   } catch (err) {
-    console.error("Error in uploadFile controller: ",err);
-    res.status(500).json({success:false, message: "Upload failed" });
+    console.error("Error in uploadFile controller: ", err);
+    res.status(500).json({ success: false, message: "Upload failed" });
   }
 }
 
@@ -28,7 +35,7 @@ const getUserFiles = async (req, res) => {
     return res.json({ success: true, data: files });
   } catch (err) {
     console.error("Error in getUserFiles controller: ", err);
-    res.status(500).json({success:false, message: "Something went wrong." });
+    res.status(500).json({ success: false, message: "Something went wrong." });
   }
 }
 

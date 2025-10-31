@@ -39,7 +39,6 @@ model UserFiles {
 
   // For RAG
   status       String    @default("PENDING") // PENDING, EMBEDDED, FAILED
-  chunks       Json?     // optional: store chunked text
-  chromaIds    Json?     // Chroma chunk IDs returned after upsert
+  qDrantIds    Json?     // qDrant chunk IDs returned after upsert
 }
 

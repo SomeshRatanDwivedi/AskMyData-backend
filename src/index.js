@@ -1,9 +1,10 @@
 import express from "express";
 import cors from "cors";
-import apiRoute from "./routes/index.js"
-import dotenv from "dotenv";
 import path from "path";
-dotenv.config();   
+import dotenv from "dotenv";
+dotenv.config();  
+import apiRoute from "./routes/index.js"
+
 
 const app = express();
 app.use(express.json()); // <-- parses JSON body

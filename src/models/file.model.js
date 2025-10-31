@@ -24,12 +24,25 @@ const getFiles = async (condition, select) => {
   }
 }
 
+const updateFile = async (condition, data) => {
+  try {
+    const res=await prisma.userFiles.update({
+      where: condition,
+      data: data
+    });
+    return res;
+  } catch (err) {
+    console.log("Erro in updateFile model: ", err)
+    throw err;
+  }
+}
 
 
 
 const fileModel = {
   saveFile,
-  getFiles
+  getFiles,
+  updateFile
 }
 
 export default fileModel;
