@@ -7,9 +7,9 @@ const vectorDB = new VectorDb();
 export const uploadFileInVectorDb = async (filePath, filename, userId) => {
   try {
     const content = await loadPdf(filePath);
-    const status=await vectorDB.getOrCreateCollection("user_files");
+    const status=await vectorDB.getOrCreateCollection();
     if (status) {
-      const res= await vectorDB.insertDocument("user_files", content, {
+      const res= await vectorDB.insertDocument(content, {
         filename,
         userId,
       });

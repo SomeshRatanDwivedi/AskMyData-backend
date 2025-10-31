@@ -21,7 +21,7 @@ const uploadFile = async (req, res) => {
       const res = await uploadFileInVectorDb(filePath, req.file.filename, req.user.userId);
       await fileModel.updateFile({ id: saved.id }, res);
     }
-    return res.json({ success: true, data: saved });
+    return res.status(200).json({ success: true, data: saved });
   } catch (err) {
     console.error("Error in uploadFile controller: ", err);
     res.status(500).json({ success: false, message: "Upload failed" });
