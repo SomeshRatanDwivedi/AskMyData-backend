@@ -11,7 +11,7 @@ router.get("/", (req, res) => {
 })
 
 
-router.post("/", validateJwt, questionController.getAnswer)
+router.post("/", validateJwt, questionController.getAnswer);
 
 
 

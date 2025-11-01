@@ -22,5 +22,5 @@ app.get("/", (req, res) => {
 app.use("/api", apiRoute);
 
 app.listen(process.env.PORT,() => {
-  console.log(`app is listening on Port: ${process.env.PORT}`)
+  console.log(`app is listening on Port: ${process.env.PORT}`);
 })

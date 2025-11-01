@@ -89,8 +89,10 @@ class VectorDb {
     }
   }
 
-  async searchQuery(query, userId) {
+  async searchQuery(query, userId, options={}) {
     try {
+      const {scoreThreshold = 0.3, topK = 4, withVector=false, withPayload=true, limit=50} = options;
+      console.log(`🔍 Searching for query '${query}' with userId '${userId}'`);
       const embeddedQuery = await this.embeder.embedQuery(query);
       const results = await this.client.search(this.collectionName, {
         vector: embeddedQuery,
@@ -99,9 +101,15 @@ class VectorDb {
             { key: "userId", match: { value: userId } }
           ]
         },
-        limit: 10
+        limit: limit,
+        score_threshold: scoreThreshold,
+        with_payload: withPayload,
+        with_vector:withVector
       });
-      return results;
+      //Slicing topK elements only
+      const slicedRes=results.slice(0,topK);
+      const context = slicedRes.map(r => r.payload.text).join("\n\n");
+      return context;
     } catch (err) {
       console.log("Error in searchQuery: ", err);
       throw err;
