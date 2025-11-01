@@ -10,8 +10,8 @@ const getAnswer = async (req, res) => {
     const answer = await llm.answerWithContext(question, context);
     return res.status(200).json({ success: true, data:answer});
   } catch (err) {
-    console.log("Error in getAnswer controller: ", err);
-    res.status(500).json({ success: false, message: "Search Failed" });
+    console.log("Error in getAnswer controller: ", err.message);
+    res.status(500).json({ success: false, message: err.message });
   }
 }
 

@@ -1,5 +1,5 @@
 import express from "express";
-import questionController from "../controllers/question.controller.js";
+import aiController from "../controllers/ai.controller.js";
 import validateJwt from "../middlewares/validateJwt.middleware.js";
 
 
@@ -11,7 +11,7 @@ router.get("/", (req, res) => {
 })
 
 
-router.post("/", validateJwt, questionController.getAnswer);
+router.post("/ask", validateJwt, aiController.getAnswer);
 
 
 

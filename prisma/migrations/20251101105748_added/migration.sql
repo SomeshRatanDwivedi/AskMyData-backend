@@ -1,0 +1,10 @@
+-- CreateTable
+CREATE TABLE "ChatHistory" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "question" TEXT NOT NULL,
+    "answer" TEXT NOT NULL,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "userId" INTEGER NOT NULL,
+    CONSTRAINT "ChatHistory_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("userId") ON DELETE RESTRICT ON UPDATE CASCADE
+);

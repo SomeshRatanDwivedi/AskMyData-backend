@@ -24,6 +24,7 @@ model User {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now())
   files       UserFiles[]
+  chatHistories ChatHistory[]
 }
 
 model UserFiles {
@@ -40,5 +41,16 @@ model UserFiles {
   // For RAG
   status       String    @default("PENDING") // PENDING, EMBEDDED, FAILED
   qDrantIds    Json?     // qDrant chunk IDs returned after upsert
+}
+
+model ChatHistory {
+  id           String     @id @default(uuid())
+  question     String
+  answer       String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @default(now())
+
+  userId       Int
+  user         User       @relation(fields: [userId], references: [userId])
 }
 
