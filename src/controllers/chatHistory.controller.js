@@ -3,13 +3,34 @@ import chatHistoryModel from "../models/chatHistory.model.js";
 
 const getChat = async (req, res) => {
   try {
-    const chatHistory = await chatHistoryModel.getChat({userId:Number(req.user.userId)});
-    return res.status(200).json({ success: true, data: chatHistory });
+    const chatHistory = await chatHistoryModel.getChat({ userId: Number(req.user.userId) });
+
+    const modifiedChatHistory = chatHistory.flatMap(entry => [
+      {
+        id: entry.id,
+        createdAt: entry.createdAt,
+        role: "user",
+        content: entry.question
+      },
+      {
+        id: entry.id,
+        createdAt: entry.createdAt,
+        role: "model",
+        content: entry.answer
+      }
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      data: modifiedChatHistory
+    });
+
   } catch (err) {
-    console.log("Error in getAnswer controller: ", err.message);
-    res.status(500).json({ success: false, message: err.message });
+    console.log("Error in getChat controller:", err.message);
+    return res.status(500).json({ success: false, message: err.message });
   }
-}
+};
+
 const saveChat = async (req, res) => {
   try {
     const { question, answer } = req.body;

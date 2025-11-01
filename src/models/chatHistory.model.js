@@ -3,7 +3,7 @@ const prisma = new PrismaClient();
 
 const getChat = async (condition) => {
   try {
-    const chatHistory = await prisma.chatHistory.findMany({ where: condition });
+    const chatHistory = await prisma.chatHistory.findMany({ where: condition, orderBy:{createdAt:"asc"} });
     return chatHistory;
   } catch (err) {
     console.log("Erro in getChat model: ", err)

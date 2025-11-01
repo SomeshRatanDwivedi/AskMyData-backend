@@ -1,4 +1,3 @@
-import fs from "fs";
 import VectorDb from "./vector.service.js";
 import { loadPdf } from "../loaders/pdfLoader.js";
 

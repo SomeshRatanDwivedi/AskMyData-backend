@@ -12,6 +12,7 @@ router.get("/", (req, res) => {
 
 
 router.post("/ask", validateJwt, aiController.getAnswer);
+router.post("/get-vector-raw-data", validateJwt, aiController.getVectorRawData);
 
 
 

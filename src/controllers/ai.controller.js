@@ -15,8 +15,19 @@ const getAnswer = async (req, res) => {
   }
 }
 
+const getVectorRawData = async (req, res) => {
+  try {
+    const { question, scoreThreshold = 0.2, topK = 4, withVector = false, withPayload = true, limit = 50 } = req.body;
+    const context = await vectorDb.searchQuery(question, req.user.userId, { scoreThreshold , topK , withVector , withPayload , limit, rawData:true });
+    return res.status(200).json({ success: true, data: context });
+  } catch (err) {
+    console.log("Error in getAnswer controller: ", err.message);
+    res.status(500).json({ success: false, message: err.message });
+  }
+}
 const questionController = {
-  getAnswer
+  getAnswer,
+  getVectorRawData
 }
 
 export default questionController;
