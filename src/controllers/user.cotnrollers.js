@@ -70,11 +70,22 @@ const editProfile = async (req, res) => {
     res.status(500).json({ success: false, message: "Profile update failed" });
   }
 }
+
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await userModel.getAllUsers(Number(req.user.userId));
+    res.status(200).json({ success: true, data: users });
+  } catch (error) {
+    console.error("Error in getAllUsers controller: ", error);
+    res.status(500).json({ success: false, message: "User retrieval failed" });
+  }
+}
 const userController = {
   register,
   login,
   getProfile,
-  editProfile
+  editProfile,
+  getAllUsers
 };
 
 export default userController;

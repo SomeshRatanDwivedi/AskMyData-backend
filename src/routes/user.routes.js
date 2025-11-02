@@ -1,13 +1,18 @@
 import express from "express";
 import userContoller from "../controllers/user.cotnrollers.js"
 import validateJwt from './../middlewares/validateJwt.middleware.js';
+import validateAdminUser from "../middlewares/validateAdminUser.js";
 const router = express.Router();
 
 
 router.post("/login", userContoller.login);
 router.post("/register", userContoller.register);
-router.get('/profile', validateJwt, userContoller.getProfile)
-router.put('/edit-profile', validateJwt, userContoller.editProfile)
+router.get('/profile', validateJwt, userContoller.getProfile);
+router.put('/edit-profile', validateJwt, userContoller.editProfile);
+router.get("/all-users", validateJwt, validateAdminUser, userContoller.getAllUsers);
+// router.delete("/delete-user/:id", validateJwt, validateAdminUser, userContoller.deleteUser);
+// router.get("/user/:id", validateJwt, validateAdminUser, userContoller.getUser);
+
 
 
 

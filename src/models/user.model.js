@@ -23,12 +23,43 @@ const getUser = async (condition, isPassReq=false) => {
         lastName: true,
         createdAt: true,
         updatedAt: true,
-        password:isPassReq
+        password: isPassReq,
+        isAdmin:true
       }
     });
     return user;
   } catch (err) {
     console.log("Erro in getting user: ", err)
+    throw err;
+  }
+}
+
+const getAllUsers = async (loginUserId) => {
+  try {
+    const users = await prisma.user.findMany({
+      where: { userId: { not: loginUserId }},
+      select: {
+        userId: true,
+        email:true,
+        firstName: true,
+        lastName: true,
+        createdAt: true,
+        updatedAt: true,
+        password: false,
+        isAdmin: true,
+        _count: {
+          select:{files:true}
+        }
+      },
+    });
+    return users.map(user => {
+      return {
+        ...user,
+        filesCount: user._count.files
+      }
+    });
+  } catch (err) {
+    console.log("Erro in getting all users: ", err)
     throw err;
   }
 }
@@ -42,9 +73,11 @@ const updateUser = async (condition, data) => {
         userId: true,
         firstName: true,
         lastName: true,
+        email:true,
         createdAt: true,
         updatedAt: true,
-        password:false
+        password: false,
+        isAdmin:true
       }
     });
     return updatedUser;
@@ -57,7 +90,8 @@ const updateUser = async (condition, data) => {
 const userModel = {
   registerUser,
   getUser,
-  updateUser
+  updateUser,
+  getAllUsers
 };
 
 export default userModel;
