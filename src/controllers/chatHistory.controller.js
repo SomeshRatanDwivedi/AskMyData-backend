@@ -35,7 +35,13 @@ const saveChat = async (req, res) => {
   try {
     const { question, answer } = req.body;
     const saveChat = await chatHistoryModel.saveChat({ question, answer, userId: req.user.userId });
-    return res.status(200).json({ success: true, data: saveChat });
+    const modifiedChat ={
+        id: saveChat.id,
+        createdAt: saveChat.createdAt,
+        role: "model",
+        content: saveChat.answer
+      }
+    return res.status(200).json({ success: true, data: modifiedChat });
   } catch (err) {
     console.log("Error in getAnswer controller: ", err.message);
     res.status(500).json({ success: false, message: err.message });
