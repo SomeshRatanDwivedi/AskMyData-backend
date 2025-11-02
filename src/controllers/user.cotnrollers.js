@@ -24,7 +24,7 @@ const login = async (req, res) => {
   try {
     let { email, password } = req.body;
     password = decryptMethod(password);
-    const user = await userModel.getUser({ email });
+    const user = await userModel.getUser({ email },true);
     if (!user) {
       return res.status(401).json({ success: false, message: "User not found" });
     }
@@ -42,9 +42,39 @@ const login = async (req, res) => {
 };
 
 
+const getProfile = async (req, res) => {
+  try {
+    const user = await userModel.getUser({ userId: req.user.userId });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    res.status(200).json({ success: true, data:user });
+  } catch (error) {
+    console.error("Error in getProfile controller: ", error);
+    res.status(500).json({ success: false, message: "Profile retrieval failed" });
+  }
+}
+
+
+const editProfile = async (req, res) => {
+  try {
+    const { firstName, lastName} = req.body;
+    const updatedUser = {}
+    updatedUser.firstName = firstName;
+    updatedUser.lastName = lastName;
+    updatedUser.updatedAt=new Date();
+    const saveUser=await userModel.updateUser({userId:Number(req.user.userId)}, updatedUser);
+    res.status(200).json({ success: true, data: saveUser });
+  } catch (error) {
+    console.error("Error in editProfile controller: ", error);
+    res.status(500).json({ success: false, message: "Profile update failed" });
+  }
+}
 const userController = {
   register,
-  login
+  login,
+  getProfile,
+  editProfile
 };
 
 export default userController;

@@ -13,10 +13,18 @@ const registerUser = async (user) => {
   }
 }
 
-const getUser = async (condition) => {
+const getUser = async (condition, isPassReq=false) => {
   try {
     const user = await prisma.user.findUnique({
       where: condition,
+      select: {
+        userId: true,
+        firstName: true,
+        lastName: true,
+        createdAt: true,
+        updatedAt: true,
+        password:isPassReq
+      }
     });
     return user;
   } catch (err) {
@@ -25,9 +33,31 @@ const getUser = async (condition) => {
   }
 }
 
+const updateUser = async (condition, data) => {
+  try {
+    const updatedUser = await prisma.user.update({
+      where: condition,
+      data: data,
+      select: {
+        userId: true,
+        firstName: true,
+        lastName: true,
+        createdAt: true,
+        updatedAt: true,
+        password:false
+      }
+    });
+    return updatedUser;
+  } catch (err) {
+    console.log("Erro in updating user: ", err)
+    throw err;
+  }
+}
+
 const userModel = {
   registerUser,
-  getUser
+  getUser,
+  updateUser
 };
 
 export default userModel;
