@@ -12,8 +12,8 @@ app.use(express.urlencoded({ extended: true })); // <-- parses form data
 
 app.use(cors());
 
-
-app.use("/uploads", express.static(path.join(__dirname, "./uploads")));
+const uploadFolder = path.join(process.cwd(), "src", "uploads");
+app.use("/api/uploads", express.static(uploadFolder));
 
 app.get("/", (req, res) => {
   res.send("Your api is working")

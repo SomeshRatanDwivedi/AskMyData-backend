@@ -1,9 +1,7 @@
 import Groq from "groq-sdk";
-import dotenv from "dotenv";
-dotenv.config(); 
 
-const GROQ_API_KEY = "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";
-console.log(GROQ_API_KEY, "api key")
+
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
 if (!GROQ_API_KEY) {
   throw new Error("GROQ_API_KEY is not set in environment variables.");
 }

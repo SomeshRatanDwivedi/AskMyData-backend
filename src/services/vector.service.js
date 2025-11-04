@@ -115,6 +115,19 @@ class VectorDb {
     }
   }
 
+  async deleteVectors(vectorIds) {
+    try {
+      const res = await this.client.delete(this.collectionName, {
+        points: vectorIds
+      });
+      console.log(`✅ Deleted ${vectorIds.length} vectors from '${this.collectionName}'`);
+      return res;
+    } catch (err) {
+      console.error("❌ Error deleting vectors:", err);
+      throw err;
+    }
+  }
+
 }
 
 export default VectorDb;

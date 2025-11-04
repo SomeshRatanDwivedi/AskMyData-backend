@@ -58,12 +58,13 @@ const getProfile = async (req, res) => {
 
 const editProfile = async (req, res) => {
   try {
-    const { firstName, lastName} = req.body;
+    const { firstName, lastName, groqApiKey } = req.body;
     const updatedUser = {}
     updatedUser.firstName = firstName;
     updatedUser.lastName = lastName;
+    updatedUser.groqApiKey=groqApiKey
     updatedUser.updatedAt=new Date();
-    const saveUser=await userModel.updateUser({userId:Number(req.user.userId)}, updatedUser);
+    const saveUser = await userModel.updateUser({ userId: Number(req.user.userId)}, updatedUser);
     res.status(200).json({ success: true, data: saveUser });
   } catch (error) {
     console.error("Error in editProfile controller: ", error);
@@ -73,11 +74,68 @@ const editProfile = async (req, res) => {
 
 const getAllUsers = async (req, res) => {
   try {
-    const users = await userModel.getAllUsers(Number(req.user.userId));
+    const users = await userModel.getAllUsers();
     res.status(200).json({ success: true, data: users });
   } catch (error) {
     console.error("Error in getAllUsers controller: ", error);
     res.status(500).json({ success: false, message: "User retrieval failed" });
+  }
+}
+
+const getUserByUserId = async (req, res) => {
+  try {
+    const user = await userModel.getUser({ userId: Number(req.params.id) });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    res.status(200).json({ success: true, data: user });
+  } catch (error) {
+    console.error("Error in getUserByUserId controller: ", error);
+    res.status(500).json({ success: false, message: "User retrieval failed" });
+  }
+}
+
+const deleteUser = async (req, res) => {
+  try {
+    const user = await userModel.getUser({ userId: Number(req.params.id) });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    await userModel.deleteUser({ userId: Number(req.params.id) });
+    res.status(200).json({ success: true, message: "User deleted successfully" });
+  } catch (error) {
+    console.error("Error in deleteUser controller: ", error);
+    res.status(500).json({ success: false, message: "User deletion failed" });
+  }
+}
+
+const enableDisableUser = async (req, res) => {
+  try {
+    const user = await userModel.getUser({ userId: Number(req.params.id) });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    const disableUser={isActive:!user.isActive, updatedAt:new Date()};
+    await userModel.updateUser({ userId: Number(req.params.id) }, disableUser);
+    res.status(200).json({ success: true, message: "User disabled successfully" });
+  } catch (error) {
+    console.error("Error in disableUser controller: ", error);
+    res.status(500).json({ success: false, message: "User disabling failed" });
+  }
+}
+
+const makeRemoveAdmin = async(req, res) => {
+  try {
+    const user = await userModel.getUser({ userId: Number(req.params.id) });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    const makeAdminUser = { isAdmin: !user.isAdmin, updatedAt: new Date() };
+    await userModel.updateUser({ userId: Number(req.params.id) }, makeAdminUser);
+    res.status(200).json({ success: true, message: "User made admin successfully" });
+  } catch (error) {
+    console.error("Error in makeAdmin controller: ", error);
+    res.status(500).json({ success: false, message: "User making admin failed" });
   }
 }
 const userController = {
@@ -85,7 +143,11 @@ const userController = {
   login,
   getProfile,
   editProfile,
-  getAllUsers
+  getAllUsers,
+  getUserByUserId,
+  deleteUser,
+  enableDisableUser,
+  makeRemoveAdmin
 };
 
 export default userController;

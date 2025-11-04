@@ -19,12 +19,15 @@ const getUser = async (condition, isPassReq=false) => {
       where: condition,
       select: {
         userId: true,
+        email:true,
         firstName: true,
         lastName: true,
         createdAt: true,
         updatedAt: true,
         password: isPassReq,
-        isAdmin:true
+        isAdmin: true,
+        isActive: true,
+        groqApiKey: true,
       }
     });
     return user;
@@ -34,10 +37,9 @@ const getUser = async (condition, isPassReq=false) => {
   }
 }
 
-const getAllUsers = async (loginUserId) => {
+const getAllUsers = async () => {
   try {
     const users = await prisma.user.findMany({
-      where: { userId: { not: loginUserId }},
       select: {
         userId: true,
         email:true,
@@ -47,6 +49,7 @@ const getAllUsers = async (loginUserId) => {
         updatedAt: true,
         password: false,
         isAdmin: true,
+        isActive: true,
         _count: {
           select:{files:true}
         }
@@ -71,13 +74,16 @@ const updateUser = async (condition, data) => {
       data: data,
       select: {
         userId: true,
+        email:true,
         firstName: true,
         lastName: true,
         email:true,
         createdAt: true,
         updatedAt: true,
         password: false,
-        isAdmin:true
+        isAdmin: true,
+        isActive: true,
+        groqApiKey:true
       }
     });
     return updatedUser;
@@ -87,11 +93,23 @@ const updateUser = async (condition, data) => {
   }
 }
 
+const deleteUser = async (condition) => {
+  try {
+    const deletedUser = await prisma.user.delete({
+      where: condition,
+    });
+    return deletedUser;
+  } catch (err) {
+    console.log("Erro in deleting user: ", err)
+    throw err;
+  }
+}
 const userModel = {
   registerUser,
   getUser,
   updateUser,
-  getAllUsers
+  getAllUsers,
+  deleteUser
 };
 
 export default userModel;
