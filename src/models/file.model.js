@@ -1,4 +1,4 @@
-import { PrismaClient } from "../generated/prisma/client.ts";
+import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 
@@ -16,7 +16,7 @@ const saveFile = async (fileInfo) => {
 
 const getFiles = async (condition, select) => {
   try {
-    const newFile = await prisma.userFiles.findMany({where: condition, select, orderBy:{createdAt:"desc"}});
+    const newFile = await prisma.userFiles.findMany({ where: condition, select, orderBy: { createdAt: "desc" } });
     return newFile;
   } catch (err) {
     console.log("Erro in getFiles model: ", err)
@@ -26,7 +26,7 @@ const getFiles = async (condition, select) => {
 
 const updateFile = async (condition, data) => {
   try {
-    const res=await prisma.userFiles.update({
+    const res = await prisma.userFiles.update({
       where: condition,
       data: data,
     });
@@ -39,7 +39,7 @@ const updateFile = async (condition, data) => {
 
 const deleteFile = async (condition, select) => {
   try {
-    const res=await prisma.userFiles.delete({
+    const res = await prisma.userFiles.delete({
       where: condition,
       select
     });

@@ -1,4 +1,4 @@
-import { PrismaClient } from "../generated/prisma/client.ts";
+import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 const registerUser = async (user) => {
@@ -13,13 +13,13 @@ const registerUser = async (user) => {
   }
 }
 
-const getUser = async (condition, isPassReq=false) => {
+const getUser = async (condition, isPassReq = false) => {
   try {
     const user = await prisma.user.findUnique({
       where: condition,
       select: {
         userId: true,
-        email:true,
+        email: true,
         firstName: true,
         lastName: true,
         createdAt: true,
@@ -42,7 +42,7 @@ const getAllUsers = async () => {
     const users = await prisma.user.findMany({
       select: {
         userId: true,
-        email:true,
+        email: true,
         firstName: true,
         lastName: true,
         createdAt: true,
@@ -51,7 +51,7 @@ const getAllUsers = async () => {
         isAdmin: true,
         isActive: true,
         _count: {
-          select:{files:true}
+          select: { files: true }
         }
       },
     });
@@ -74,16 +74,16 @@ const updateUser = async (condition, data) => {
       data: data,
       select: {
         userId: true,
-        email:true,
+        email: true,
         firstName: true,
         lastName: true,
-        email:true,
+        email: true,
         createdAt: true,
         updatedAt: true,
         password: false,
         isAdmin: true,
         isActive: true,
-        groqApiKey:true
+        groqApiKey: true
       }
     });
     return updatedUser;
