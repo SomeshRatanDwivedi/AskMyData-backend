@@ -50,8 +50,14 @@ const saveChat = async (req, res) => {
 
 const editChat = async (req, res) => {
   try {
-    const editChat = await chatHistoryModel.editChat({id:req.params.id, userId:req.user.userId}, req.body);
-    return res.status(200).json({ success: true, data: editChat });
+    const editChat = await chatHistoryModel.editChat({ id: req.params.id, userId: req.user.userId }, req.body);
+    const modifiedChat = {
+      id: editChat.id,
+      createdAt: editChat.createdAt,
+      role: "model",
+      content: editChat.answer
+    }
+    return res.status(200).json({ success: true, data: modifiedChat });
   } catch (err) {
     console.log("Error in editChat model: ", err)
     throw err;
