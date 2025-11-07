@@ -7,9 +7,10 @@ if (!GROQ_API_KEY) {
 }
 
 class LLM {
-  constructor(userGroqApiKey,modelName = "llama-3.3-70b-versatile") {
+  constructor(userGroqApiKey, modelName = "llama-3.3-70b-versatile") {
+    const apiKey = userGroqApiKey!==""?userGroqApiKey: GROQ_API_KEY;
     this.model = modelName
-    this.groq=new Groq({ apiKey: userGroqApiKey??GROQ_API_KEY });
+    this.groq = new Groq({ apiKey: apiKey });
   }
 
   /**

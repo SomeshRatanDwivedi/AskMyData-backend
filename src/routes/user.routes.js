@@ -14,7 +14,7 @@ router.put('/:id/enable-disable', validateJwt, validateAdminUser, userContoller.
 
 router.get("/all-users", validateJwt, validateAdminUser, userContoller.getAllUsers);
 router.delete("/:id", validateJwt, validateAdminUser, userContoller.deleteUser);
-router.get("/:id", validateJwt, validateAdminUser, userContoller.getUserByUserId);
+router.get("/:id", validateJwt, userContoller.getUserByUserId);
 router.put("/:id/make-remove-admin", validateJwt, validateAdminUser, userContoller.makeRemoveAdmin);
 
 
