@@ -22,7 +22,17 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    let { email, password } = req.body;
+    const authHeader = req.headers['authorization']; // or req.get("Authorization")
+
+    if (!authHeader || !authHeader.startsWith("Basic ")) {
+      return res.status(401).json({ message: "Authorization header missing" });
+    }
+
+    const base64Credentials = authHeader.replace("Basic ", "").trim();
+    const decoded = Buffer.from(base64Credentials, "base64").toString("utf-8");
+
+    let [email, password] = decoded.split(":"); // Format is email:password
+    
     password = decryptMethod(password);
     const user = await userModel.getUser({ email },true);
     if (!user) {
@@ -34,7 +44,7 @@ const login = async (req, res) => {
     }
     const accessToken = generateJwtToken(user);
     delete user.password;
-    res.json({ success: true, user, accessToken });
+    res.status(200).json({ success: true, user, accessToken });
   } catch (error) {
     console.error("Error in login controller: ",error);
     res.status(500).json({ success: false, message: "Login failed" });

@@ -6,10 +6,10 @@ if (!GROQ_API_KEY) {
   throw new Error("GROQ_API_KEY is not set in environment variables.");
 }
 
-const groq = new Groq({ apiKey: GROQ_API_KEY });
 class LLM {
-  constructor(modelName = "llama-3.3-70b-versatile") {
+  constructor(userGroqApiKey,modelName = "llama-3.3-70b-versatile") {
     this.model = modelName
+    this.groq=new Groq({ apiKey: userGroqApiKey??GROQ_API_KEY });
   }
 
   /**
@@ -17,9 +17,7 @@ class LLM {
    */
   async generate(systemPrompt, userPrompt, options = {}) {
     try {
-      const { safetySettings, generationConfig } = options;
-
-      const response = await groq.chat.completions.create({
+      const response = await this.groq.chat.completions.create({
         messages: [
           // Set an optional system message. This sets the behavior of the
           // assistant and can be used to provide specific instructions for
