@@ -1,5 +1,5 @@
 import express from "express";
-import userContoller from "../controllers/user.cotnrollers.js"
+import userContoller from "../controllers/user.controllers.js"
 import validateJwt from './../middlewares/validateJwt.middleware.js';
 import validateAdminUser from "../middlewares/validateAdminUser.js";
 const router = express.Router();
