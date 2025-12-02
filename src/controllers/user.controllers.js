@@ -2,23 +2,68 @@
 import bcrypt from "bcryptjs";
 import { decryptMethod, generateJwtToken } from "../utility/index.js";
 import userModel from "../models/user.model.js";
+import { sendMail } from "../configs/nodemailer.config.js";
+import redisClient from "../configs/radis.config.js";
+import { jwtDecode } from "jwt-decode";
 
 const register = async (req, res) => {
-  let { email, password } = req.body;
+  let { email, password, firstName, lastName } = req.body;
   password = decryptMethod(password);
   try {
     const isUserAlreadyExists = await userModel.getUser({ email });
     if (isUserAlreadyExists) {
       return res.status(409).json({ success: false, message: `${email} already exists` });
     }
-    const hashPassword=await bcrypt.hash(password, 10)
-    const user = await userModel.registerUser({...req.body, password:hashPassword})
-    res.status(201).json({ success: true, message: "User registered successfully" });
+    const otp = await sendMail(email);
+    const redisOtpKey = `otp:${email}`;
+    const userInfoRedisKey = `user:${email}`;
+    const userTempData = {
+      firstName,
+      lastName,
+      email,
+      password: await bcrypt.hash(password, 10),
+    };
+    await redisClient.setEx(redisOtpKey, process.env.OTP_EXPIRATION_TIME_IN_SEC, otp);
+    await redisClient.setEx(userInfoRedisKey, process.env.OTP_EXPIRATION_TIME_IN_SEC, JSON.stringify(userTempData));
+
+    res.status(200).json({ success: true, data: (process.env.OTP_EXPIRATION_TIME_IN_SEC / 60) })
+
   } catch (error) {
     console.error("Error in register controller: ", error);
     res.status(500).json({ success: false, message: "Registration failed" });
   }
 };
+
+const otpVerification = async (req, res) => {
+  try {
+    const { otp, email } = req.body;
+    const redisOtpKey = `otp:${email}`;
+    const savedOtp = await redisClient.get(redisOtpKey);
+    if (!savedOtp) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP expired or not found.",
+      });
+    }
+
+    if (savedOtp !== otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP",
+      });
+    }
+    await redisClient.del(redisOtpKey);
+    const userInfoRedisKey = `user:${email}`;
+    let userInfo = await redisClient.get(userInfoRedisKey);
+    userInfo = JSON.parse(userInfo);
+    await redisClient.del(userInfoRedisKey);
+    const user = await userModel.registerUser(userInfo);
+    res.status(201).json({ success: true, message: "User registered successfully" });
+  } catch (err) {
+    console.error("Error in otpVerification: ", err);
+    res.status(500).json({ success: false, message: "Otp verification failed" })
+  }
+}
 
 const login = async (req, res) => {
   try {
@@ -34,7 +79,7 @@ const login = async (req, res) => {
     let [email, password] = decoded.split(":"); // Format is email:password
     
     password = decryptMethod(password);
-    const user = await userModel.getUser({ email },true);
+    const user = await userModel.getUser({ email }, true);
     if (!user) {
       return res.status(401).json({ success: false, message: "User not found" });
     }
@@ -46,7 +91,7 @@ const login = async (req, res) => {
     delete user.password;
     res.status(200).json({ success: true, user, accessToken });
   } catch (error) {
-    console.error("Error in login controller: ",error);
+    console.error("Error in login controller: ", error);
     res.status(500).json({ success: false, message: "Login failed" });
   }
 };
@@ -58,7 +103,7 @@ const getProfile = async (req, res) => {
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
-    res.status(200).json({ success: true, data:user });
+    res.status(200).json({ success: true, data: user });
   } catch (error) {
     console.error("Error in getProfile controller: ", error);
     res.status(500).json({ success: false, message: "Profile retrieval failed" });
@@ -72,9 +117,9 @@ const editProfile = async (req, res) => {
     const updatedUser = {}
     updatedUser.firstName = firstName;
     updatedUser.lastName = lastName;
-    updatedUser.groqApiKey=groqApiKey
-    updatedUser.updatedAt=new Date();
-    const saveUser = await userModel.updateUser({ userId: Number(req.user.userId)}, updatedUser);
+    updatedUser.groqApiKey = groqApiKey
+    updatedUser.updatedAt = new Date();
+    const saveUser = await userModel.updateUser({ userId: Number(req.user.userId) }, updatedUser);
     res.status(200).json({ success: true, data: saveUser });
   } catch (error) {
     console.error("Error in editProfile controller: ", error);
@@ -125,7 +170,7 @@ const enableDisableUser = async (req, res) => {
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
-    const disableUser={isActive:!user.isActive, updatedAt:new Date()};
+    const disableUser = { isActive: !user.isActive, updatedAt: new Date() };
     await userModel.updateUser({ userId: Number(req.params.id) }, disableUser);
     res.status(200).json({ success: true, message: "User disabled successfully" });
   } catch (error) {
@@ -134,7 +179,7 @@ const enableDisableUser = async (req, res) => {
   }
 }
 
-const makeRemoveAdmin = async(req, res) => {
+const makeRemoveAdmin = async (req, res) => {
   try {
     const user = await userModel.getUser({ userId: Number(req.params.id) });
     if (!user) {
@@ -148,6 +193,41 @@ const makeRemoveAdmin = async(req, res) => {
     res.status(500).json({ success: false, message: "User making admin failed" });
   }
 }
+
+const googleLogin = async (req, res) => {
+  try {
+    const { idToken } = req.body;
+    const decoded = await jwtDecode(idToken);
+    if (!decoded || !decoded.email || !decoded.name) {
+      return res.status(400).json({ success: false, message: "Invalid token" });
+    }
+    const { email, name } = decoded;
+    const user = await userModel.getUser({ email });
+    if (user) {
+      const accessToken = generateJwtToken(user);
+      delete user.password;
+      res.status(200).json({ success: true, user, accessToken });
+    } else {
+      const fullName = name.split(" ");
+      const firstName = fullName[0];
+      const lastName = fullName[fullName.length - 1];
+      const userInfo = {
+        firstName,
+        lastName,
+        email,
+        authProvider: "google"
+      };
+      const user = await userModel.registerUser(userInfo);
+      const accessToken = generateJwtToken(user);
+      delete user.password;
+      res.status(200).json({ success: true, user, accessToken });
+    }
+
+  } catch (error) {
+    console.error("Error in googleLogin controller: ", error);
+    res.status(500).json({ success: false, message: "Google login failed" })
+  }
+}
 const userController = {
   register,
   login,
@@ -157,7 +237,9 @@ const userController = {
   getUserByUserId,
   deleteUser,
   enableDisableUser,
-  makeRemoveAdmin
+  makeRemoveAdmin,
+  otpVerification,
+  googleLogin
 };
 
 export default userController;

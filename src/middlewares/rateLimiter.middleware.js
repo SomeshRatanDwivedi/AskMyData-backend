@@ -15,7 +15,7 @@ export const rateLimiter = (limit, windowInSeconds) => {
       }
 
       // Check limit
-      if (requests > limit) {
+      if (requests > limit && !groqApiKey) {
         return res.status(429).json({
           success:false,
           message: `Rate limit reached. Requests without a personal API key are limited to ${limit} per ${windowInSeconds} seconds.`
